@@ -14,7 +14,7 @@ endif (WIN32)
 # find_package(SDL2_mixer REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(imgui REQUIRED)
-# find_package(stb REQUIRED) # not required in this project...
+find_package(stb REQUIRED)
 
 set(
         SRC
