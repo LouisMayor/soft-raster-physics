@@ -11,7 +11,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG -DWIN32")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -DWIN32")
 endif (WIN32)
 
-find_package(SDL2_mixer REQUIRED)
+# find_package(SDL2_mixer REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(imgui REQUIRED)
 # find_package(stb REQUIRED) # not required in this project...
