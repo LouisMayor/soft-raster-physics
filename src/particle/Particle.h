@@ -4,30 +4,38 @@
 
 #include <optional>
 
-class Particle {
-public:
-	~Particle();
+class particle {
+  public:
+	~particle();
 
-	Particle(const FVector2&, const FVector2&, f64, f64, f64, f64, u32);
-	Particle(const Particle&);
-	Particle(Particle&&) noexcept;
-	
-	Particle& operator=(const Particle&);
-	Particle& operator=(Particle&&) noexcept;
+	particle(
+		const FVector2 &,
+		const FVector2 &,
+		f64,
+		f64,
+		f64,
+		f64,
+		u32
+	);
+	particle(const particle &);
+	particle(particle &&) noexcept;
+
+	particle &operator=(const particle &);
+	particle &operator=(particle &&) noexcept;
 
 	void update();
 	void register_events();
-private:
 
-	Particle() = delete;
+  private:
+	particle() = delete;
 
 	void on_proxy_updated();
-	
+
 	bool constructed_ = false;
 	bool registered_events_ = false;
-	
-public:
+
+  public:
 	std::optional<u32> ProxyID;
-	
+
 	FVector2 VisualPosition;
 };

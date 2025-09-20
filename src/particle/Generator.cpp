@@ -1,23 +1,29 @@
 ﻿#include "Generator.h"
 
-Generator::Generator(const GeneratorDesc &InDesc) {
+generator::generator(
+	const generator_desc &InDesc
+) {
 	desc_ = InDesc;
 	generator_id_++;
 }
 
-Particle* Generator::spawn() {
+particle *generator::spawn() {
 	spawn_count_++;
-	auto p = std::make_unique<Particle>(desc_.GeneratorPosition, FVector2{0.0, 0.0}, desc_.Mass, desc_.DragCoefficient, desc_.MediumDensity, desc_.SurfaceArea, generator_id_);
+	auto p = std::make_unique<particle>(desc_.GeneratorPosition, FVector2{0.0, 0.0}, desc_.Mass, desc_.DragCoefficient, desc_.MediumDensity, desc_.SurfaceArea, generator_id_);
 	return Particles.emplace_back(std::move(p)).get();
 }
 
-void Generator::tick(f64 dt) {
+void generator::tick(
+	f64 dt
+) {
 	if (!reached_target_) {
 		spawn_update(dt);
 	}
 }
 
-void Generator::spawn_update(f64 dt) {
+void generator::spawn_update(
+	f64 dt
+) {
 	if (!reached_target_) {
 		spawn_time_ += dt;
 		if (spawn_time_ >= desc_.SpawnDelay) {

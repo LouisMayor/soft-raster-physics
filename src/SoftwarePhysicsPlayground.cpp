@@ -1,28 +1,28 @@
-#include <memory>
-#include <SDL.h>
 #include "imgui/imgui.h"
+#include <SDL.h>
+#include <memory>
 
 #include "file.h"
-#include "imgui_setup.h"
 #include "imgui/backends/imgui_impl_sdl.h"
 #include "imgui/backends/imgui_impl_sdlrenderer.h"
+#include "imgui_setup.h"
 #include "physics/marshal.h"
 #include "physics/solver.h"
 #include "rasteriser/rasteriser.h"
 #include "rasteriser/timer.h"
 
-struct SDLWindowDestroyer
-{
-	void operator()(SDL_Window* w) const
-	{
+struct SDLWindowDestroyer {
+	void operator()(
+		SDL_Window *w
+	) const {
 		SDL_DestroyWindow(w);
 	}
 };
 
-struct SDLRendererDestroyer
-{
-	void operator()(SDL_Renderer* r) const
-	{
+struct SDLRendererDestroyer {
+	void operator()(
+		SDL_Renderer *r
+	) const {
 		SDL_DestroyRenderer(r);
 	}
 };
@@ -30,7 +30,7 @@ struct SDLRendererDestroyer
 void InitSDL();
 void ShutdownSDL();
 void LoadImage(std::string path); // load from image
-void LoadArray(); // load from memory
+void LoadArray();				  // load from memory
 
 std::unique_ptr<SDL_Window, SDLWindowDestroyer> window, uiWindow;
 std::unique_ptr<SDL_Renderer, SDLRendererDestroyer> renderer, uiRenderer;
@@ -55,8 +55,10 @@ ImguiData imguiData;
 const int windowWidth = 400;
 const int windowHeight = 400;
 
-int SDL_main(int argc, char* args[])
-{
+int SDL_main(
+	int argc,
+	char *args[]
+) {
 	InitSDL();
 	InitDearImgui(uiWindow.get(), uiRenderer.get());
 	Timer_Init();
@@ -66,20 +68,18 @@ int SDL_main(int argc, char* args[])
 
 	Ras_Init(128);
 
-	while (!quit)
-	{
+	while (!quit) {
 		SDL_PollEvent(&sdlEvent);
 		// special multi-window quit
 		// https://stackoverflow.com/questions/17541127/sdl-2-0-quit-event-with-multiple-windows
-		if (sdlEvent.type == SDL_WINDOWEVENT && sdlEvent.window.event == SDL_WINDOWEVENT_CLOSE)
-		{
+		if (sdlEvent.type == SDL_WINDOWEVENT && sdlEvent.window.event == SDL_WINDOWEVENT_CLOSE) {
 			quit = true;
 		}
 
 		// retrieves mouse position
-		i32 X,Y;
+		i32 X, Y;
 		SDL_GetMouseState(&X, &Y);
-		
+
 		previousTime = currentTime;
 		currentTime = Timer_Elapsed() / 1000000.0f; // returns microseconds in integer form
 		deltaTime = currentTime - previousTime;
@@ -93,12 +93,9 @@ int SDL_main(int argc, char* args[])
 		LoadArray();
 
 		// make sure the UI window is the only one we respond to input from
-		if (SDL_GetWindowID(uiWindow.get()) == sdlEvent.window.windowID)
-		{
+		if (SDL_GetWindowID(uiWindow.get()) == sdlEvent.window.windowID) {
 			ImGui_ImplSDL2_ProcessEvent(&sdlEvent);
-		}
-		else
-		{
+		} else {
 			// process input on render window
 		}
 
@@ -120,43 +117,47 @@ int SDL_main(int argc, char* args[])
 	return 0;
 }
 
-void LoadArray()
-{
+void LoadArray() {
 	File::to_byte_array(bufferCopy.get(), imageArray.get());
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(imageArray.get(), bufferWidth, bufferWidth,
-	                                                File::number_of_channels * 8,
-	                                                File::number_of_channels * bufferWidth, 0x000000ff,
-	                                                0x0000ff00, 0x00ff0000, 0);
-	SDL_Texture* image_texture = SDL_CreateTextureFromSurface(renderer.get(), surface);
+	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+		imageArray.get(), bufferWidth, bufferWidth, File::number_of_channels * 8, File::number_of_channels * bufferWidth, 0x000000ff, 0x0000ff00, 0x00ff0000, 0
+	);
+	SDL_Texture *image_texture = SDL_CreateTextureFromSurface(renderer.get(), surface);
 	SDL_RenderCopy(renderer.get(), image_texture, nullptr, nullptr);
 	SDL_DestroyTexture(image_texture);
 	SDL_FreeSurface(surface);
 }
 
-void LoadImage(std::string path)
-{
-	SDL_Surface* image_surface = SDL_LoadBMP(("./" + path + ".bmp").c_str());
-	SDL_Texture* image_texture = SDL_CreateTextureFromSurface(renderer.get(), image_surface);
+void LoadImage(
+	std::string path
+) {
+	SDL_Surface *image_surface = SDL_LoadBMP(("./" + path + ".bmp").c_str());
+	SDL_Texture *image_texture = SDL_CreateTextureFromSurface(renderer.get(), image_surface);
 
 	SDL_RenderCopy(renderer.get(), image_texture, nullptr, nullptr);
 	SDL_DestroyTexture(image_texture);
 	SDL_FreeSurface(image_surface);
 }
 
-std::unique_ptr<SDL_Window, SDLWindowDestroyer> CreateWindow(std::string Title, int x, int y, int wX, int wH)
-{
-	return std::unique_ptr<SDL_Window, SDLWindowDestroyer>(
-		SDL_CreateWindow(Title.c_str(), x, y, wX, wH, SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_TOP));
+std::unique_ptr<
+	SDL_Window,
+	SDLWindowDestroyer>
+CreateWindow(
+	std::string Title,
+	int x,
+	int y,
+	int wX,
+	int wH
+) {
+	return std::unique_ptr<SDL_Window, SDLWindowDestroyer>(SDL_CreateWindow(Title.c_str(), x, y, wX, wH, SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_TOP));
 }
 
-void InitSDL()
-{
+void InitSDL() {
 #ifdef _DEBUG
 	std::printf("SDL: starting init\n");
 #endif
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-	{
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
 #ifdef _DEBUG
 		std::printf("SDL: SDL_Init() failed. Reason - %s\n", SDL_GetError());
 #endif
@@ -165,8 +166,7 @@ void InitSDL()
 
 	window = CreateWindow("Render", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight);
 
-	if (window == nullptr)
-	{
+	if (window == nullptr) {
 #ifdef _DEBUG
 		std::printf("SDL: SDL_CreateWindow() failed. Reason - %s\n", SDL_GetError());
 #endif
@@ -177,8 +177,7 @@ void InitSDL()
 	SDL_GetWindowPosition(window.get(), &x, &y);
 	uiWindow = CreateWindow("Controls", x + 410, y, windowWidth + (windowWidth * 0.25f), windowHeight);
 
-	if (uiWindow == nullptr)
-	{
+	if (uiWindow == nullptr) {
 #ifdef _DEBUG
 		std::printf("SDL: SDL_CreateWindow() failed. Reason - %s\n", SDL_GetError());
 #endif
@@ -193,8 +192,7 @@ void InitSDL()
 	uiRenderer = std::unique_ptr<SDL_Renderer, SDLRendererDestroyer>(SDL_CreateRenderer(uiWindow.get(), -1, 0));
 }
 
-void ShutdownSDL()
-{
+void ShutdownSDL() {
 #ifdef _DEBUG
 	std::printf("SDL: shutting down\n");
 #endif

@@ -1,7 +1,6 @@
+#include <cstring>
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
-#include <cstring>
 
 #ifdef _DEBUG
 #include <stdio.h>
@@ -9,13 +8,13 @@
 
 #include "rasteriser.h"
 
-#include "timer.h"
+#include "particle/Generator.h"
 #include "particle/Particle.h"
+#include "physics/physics_helpers.h"
+#include "physics/solver.h"
+#include "timer.h"
 #include "vectors/Vector2.h"
 #include "vectors/Vector4.h"
-#include "particle/Generator.h"
-#include "physics/solver.h"
-#include "physics/physics_helpers.h"
 
 extern const int bufferWidth;
 extern long long bufferSize;
@@ -27,19 +26,26 @@ extern f32 currentTime;
 static f32 b = 0.0f;
 static FVector *buffer;
 
-void Ras_Init(f32 BPM) {
+void Ras_Init(
+	f32 BPM
+) {
 	buffer = (FVector *)calloc(DIMS, sizeof(FVector));
 	b = bpm2ms(BPM);
 }
 
-void Ras_Close(void) {
+void Ras_Close(
+	void
+) {
 	if (buffer) {
 		free(buffer);
 	}
 }
 
 // generates a fake low frame rate animation
-float LowframeRateEffect(f32 n, f32 min) {
+float LowframeRateEffect(
+	f32 n,
+	f32 min
+) {
 	const f32 sawT = SawtoothHz(currentTime, 1.f, min);
 	const i32 rounded = (i32)(sawT * n);
 	const f32 sawN = (f32)(rounded) / n;
@@ -60,7 +66,11 @@ void cycleColour() {
 	}
 }
 
-void setPixel(i32 x, i32 y, const FVector &col) {
+void setPixel(
+	i32 x,
+	i32 y,
+	const FVector &col
+) {
 	i32 index = y * bufferWidth + x;
 	if (index < 0 || index > DIMS) {
 		return;
@@ -69,7 +79,11 @@ void setPixel(i32 x, i32 y, const FVector &col) {
 }
 
 // https://en.wikipedia.org/wiki/Bresenham's_line_algorithm#Algorithm_for_integer_arithmetic
-void bresenham(const IVector2 &start, const IVector2 &end, const FVector &col) {
+void bresenham(
+	const IVector2 &start,
+	const IVector2 &end,
+	const FVector &col
+) {
 	i32 x0 = start.XY[0];
 	i32 y0 = start.XY[1];
 	i32 x1 = end.XY[0];
@@ -110,7 +124,11 @@ void bresenham(const IVector2 &start, const IVector2 &end, const FVector &col) {
 
 // https://stackoverflow.com/questions/1201200/fast-algorithm-for-drawing-filled-circles
 // https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
-void midpoint_circle_outline(const IVector2 &center, f32 radius, const FVector &col) {
+void midpoint_circle_outline(
+	const IVector2 &center,
+	f32 radius,
+	const FVector &col
+) {
 	const i32 r = (i32)radius;
 	i32 x = r - 1, y = 0;
 	i32 e = 3 - 2 * r;
@@ -135,7 +153,11 @@ void midpoint_circle_outline(const IVector2 &center, f32 radius, const FVector &
 	}
 }
 
-void midpoint_circle_fill(const IVector2 &center, f32 radius, const FVector &col) {
+void midpoint_circle_fill(
+	const IVector2 &center,
+	f32 radius,
+	const FVector &col
+) {
 	const i32 r = (i32)radius;
 	i32 x = r - 1, y = 0;
 	i32 e = 3 - 2 * r;
@@ -156,16 +178,26 @@ void midpoint_circle_fill(const IVector2 &center, f32 radius, const FVector &col
 	}
 }
 
-f32 getRandomFloat(i32 max) {
+f32 getRandomFloat(
+	i32 max
+) {
 	return (f32)(rand() % max) / (f32)max;
 }
 
-void Ras_OnSequenceUpdate(i32 param, f32 dt) {
+void Ras_OnSequenceUpdate(
+	i32 param,
+	f32 dt
+) {
 	Ras_Draw(static_cast<ERasterDemo>(param), dt);
 }
 
 // https://www.geometrictools.com/Documentation/MinimumAreaRectangle.pdf
-FVector2 SmallestRectangle(i32 j0, i32 j1, IVector2 *points, i32 count) {
+FVector2 SmallestRectangle(
+	i32 j0,
+	i32 j1,
+	IVector2 *points,
+	i32 count
+) {
 	IVector2 point_diff = points[j1] - points[j0];
 	FVector2 U[2] = {FVector2{(f32)point_diff.XY[0], (f32)point_diff.XY[1]}, FVector2{}};
 	U[0] = U[0].Normalise();
@@ -272,48 +304,59 @@ void RotatingCalipers() {
 const i32 centre = bufferWidth / 2;
 const FVector2 bounds = FVector2{static_cast<f64>(bufferWidth - 1), static_cast<f64>(bufferWidth - 1)};
 
-GeneratorDesc air_particle_generator_desc = GeneratorDesc{
+generator_desc air_particle_generator_desc = generator_desc{
 	FVector{1, 1, 1, 1},
 	FVector2{static_cast<f64>(centre) - 5.0, static_cast<f64>(centre)},
-	1.0, 1.05, Physics::air_density, 1.0,
-	false,  // TODO: is always true, until number of particles is reached
-	1.0,	// TODO: lifetime ignored
+	1.0,
+	1.05,
+	physics::air_density,
+	1.0,
+	false, // TODO: is always true, until number of particles is reached
+	1.0,   // TODO: lifetime ignored
 	16,
 	0.75
 };
 
-GeneratorDesc water_particle_generator_desc = GeneratorDesc{
+generator_desc water_particle_generator_desc = generator_desc{
 	FVector{0, 0, 1, 1},
 	FVector2{static_cast<f64>(centre), static_cast<f64>(centre)},
-	1000.0, 1.05, Physics::water_density, 1.0,
-	false,  // TODO: is always true, until number of particles is reached
-	1.0,	// TODO: lifetime ignored
+	1000.0,
+	1.05,
+	physics::water_density,
+	1.0,
+	false, // TODO: is always true, until number of particles is reached
+	1.0,   // TODO: lifetime ignored
 	5,
 	0.5
 };
 
-Generator air_particle_generator = Generator(air_particle_generator_desc);
-Generator water_particle_generator = Generator(water_particle_generator_desc);
+generator air_particle_generator = generator(air_particle_generator_desc);
+generator water_particle_generator = generator(water_particle_generator_desc);
 
 extern solver sys_solver;
 static constexpr f64 Timescale = 1.0;
 
-void Forces(f64 dt) {
+void Forces(
+	f64 dt
+) {
 	const f64 time = dt * Timescale;
 	sys_solver.advance(bounds, time);
 	air_particle_generator.tick(time);
 	water_particle_generator.tick(time);
 
-	for (const auto& particle : air_particle_generator.Particles) {
+	for (const auto &particle : air_particle_generator.Particles) {
 		setPixel(static_cast<i32>(particle->VisualPosition.XY[0]), static_cast<i32>(particle->VisualPosition.XY[1]), air_particle_generator_desc.ParticleColour);
 	}
-	
-	for (const auto& particle : water_particle_generator.Particles) {
+
+	for (const auto &particle : water_particle_generator.Particles) {
 		setPixel(static_cast<i32>(particle->VisualPosition.XY[0]), static_cast<i32>(particle->VisualPosition.XY[1]), water_particle_generator_desc.ParticleColour);
 	}
 }
 
-void Ras_Draw(ERasterDemo Demo, f64 dt) {
+void Ras_Draw(
+	ERasterDemo Demo,
+	f64 dt
+) {
 	switch (Demo) {
 	case ERasterDemo::RotatingCalipers:
 		RotatingCalipers();
@@ -324,12 +367,16 @@ void Ras_Draw(ERasterDemo Demo, f64 dt) {
 	}
 }
 
-void Ras_Clear(void) {
+void Ras_Clear(
+	void
+) {
 	std::memset(buffer, 0, SIZE);
 }
 
 // assumed input is the same as internal buffer
-i32 Ras_Copy(OUT FVector *externalBuffer) {
+i32 Ras_Copy(
+	OUT FVector *externalBuffer
+) {
 	if (externalBuffer) {
 		std::memcpy(externalBuffer, buffer, SIZE);
 		return 0;

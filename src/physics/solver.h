@@ -1,8 +1,8 @@
 ﻿#pragma once
 
+#include "delegate/delegate.h"
 #include "proxy.h"
 #include "types.h"
-#include "delegate/delegate.h"
 
 #include <memory>
 #include <optional>
@@ -17,23 +17,62 @@ struct ProxyValues {
 CREATE_DELEGATE(OnProxiesUpdated);
 
 class solver {
-public:
-	void advance(const FVector2&, f64);
-	bool create_proxy(u32, const FVector2&, const FVector2&, f64, f64, f64, f64, u32);
+  public:
+	void advance(
+		const FVector2 &,
+		f64
+	);
+	bool create_proxy(
+		u32,
+		const FVector2 &,
+		const FVector2 &,
+		f64,
+		f64,
+		f64,
+		f64,
+		u32
+	);
 
 	OnProxiesUpdated on_proxies_updated;
 
 	[[nodiscard]] std::optional<ProxyValues> get_proxy_values(u32) const;
 
-private:
-	void advance_step(std::vector<std::unique_ptr<proxy>>&, const FVector2&, const f64) const;
+  private:
+	void advance_step(
+		std::vector<std::unique_ptr<proxy>> &,
+		const FVector2 &,
+		const f64
+	) const;
 
-	[[nodiscard]] FVector2 solve_forces(const FVector2&, f64, f64, f64, f64, f64) const;
-	bool solve_world_collision(const FVector2&, const FVector2&, OUT FVector2&) const;
-	void solve_particle_collision(const proxy*, const proxy*, const FVector2&, OUT FVector2&, OUT FVector2&) const;
+	[[nodiscard]] FVector2 solve_forces(
+		const FVector2 &,
+		f64,
+		f64,
+		f64,
+		f64,
+		f64
+	) const;
+	bool solve_world_collision(
+		const FVector2 &,
+		const FVector2 &,
+		OUT FVector2 &
+	) const;
+	void solve_particle_collision(
+		const proxy *,
+		const proxy *,
+		const FVector2 &,
+		OUT FVector2 &,
+		OUT FVector2 &
+	) const;
 
-	[[nodiscard]] FVector2 get_force_from_world_collision(const FVector2&) const;
-	[[nodiscard]] std::tuple<FVector2, FVector2> get_force_from_particle_collision(const proxy*, const proxy*) const;
+	[[nodiscard]] FVector2 get_force_from_world_collision(const FVector2 &) const;
+	[[nodiscard]] std::tuple<
+		FVector2,
+		FVector2>
+	get_force_from_particle_collision(
+		const proxy *,
+		const proxy *
+	) const;
 
 	std::vector<std::unique_ptr<proxy>> proxies_;
 };

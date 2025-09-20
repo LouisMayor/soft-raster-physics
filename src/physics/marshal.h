@@ -15,21 +15,29 @@ struct BindingIDs {
 };
 
 class marshal {
-public:
+  public:
 	marshal();
 	~marshal();
-	
-	std::optional<u32> register_proxy(const FVector2&, const FVector2&, f64, f64, f64, f64, u32);
+
+	std::optional<u32> register_proxy(
+		const FVector2 &,
+		const FVector2 &,
+		f64,
+		f64,
+		f64,
+		f64,
+		u32
+	);
 	bool unregister_proxy(u32);
 
 	[[nodiscard]] std::optional<ProxyValues> get_proxy_values(u32) const;
 
 	// todo: restructure so this doesn't exist here, and then we can remove circular dependencies
-	proxy_properties_soa* properties_soa;
+	proxy_properties_soa *properties_soa;
 
-private:
+  private:
 	BindingIDs bind_objects();
-	
+
 	// bi-directional communication between particle and proxy objects.
 	// e.g. 'game' world and 'simulation' world
 	std::unordered_map<u32, u32> particle_proxy_map_;
