@@ -17,3 +17,6 @@ BraceWrapping:
   BeforeElse:      false
   IndentBraces:    false
 BreakBeforeBraces: Custom
+AlignAfterOpenBracket: BlockIndent
+BreakFunctionDefinitionParameters: true
+BinPackParameters: AlwaysOnePerLine
