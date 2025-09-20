@@ -133,7 +133,7 @@ void solver::solve_particle_collision(
 FVector2 solver::get_force_from_world_collision(
 	const FVector2 &Velocity
 ) const {
-	return Velocity.Abs() * 0.25;
+	return Velocity.Abs() * 0.25; // what was I doing here?
 }
 
 std::tuple<
